@@ -1,11 +1,10 @@
 __author__ = 'artem'
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 
-engine = create_engine('sqlite:///app.db', echo=True)
+
 
 
 Base = declarative_base()
@@ -52,7 +51,7 @@ class SecurityGroupTable(Base):
     """
     Main table "cluster" contain field with configuration cluster
     """
-    __tablename__ = 'cluster'
+    __tablename__ = 'security_group'
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True, unique=True)
     description = Column(String, index=True, unique=True)
@@ -66,4 +65,3 @@ class SecurityGroupTable(Base):
     def __repr__(self):
         return "<Cluster('%d', '%s', '%s')>" % (self.id, self.name, self.description)
 
-Base.metadata.create_all(engine)

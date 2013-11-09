@@ -1,7 +1,11 @@
+import sys
+sys.path.append("../..")
+
 import boto
-from model import *
-from config import engine
-from sqlalchemy.orm import sessionmaker
+from model import ClusterTable, ConnectionTable
+from database import session
+
+
 
 
 def create_cluster(name_cluster, name_key, zone):
@@ -11,7 +15,7 @@ def create_cluster(name_cluster, name_key, zone):
     :awsAccessKeyId: Access key id for access to aws
     :awsSecretKeyId: Secret key id for access to aws
     """
-    session = sessionmaker(bind=engine)()
+
     try:
         session.add(ClusterTable(name_cluster, name_key, zone))
         session.commit()
@@ -29,7 +33,6 @@ def create_connection(name_key, awsAccessKeyId, awsSecretKeyId):
     :awsAccessKeyId: Access key id for access to aws
     :awsSecretKeyId: Secret key id for access to aws
     """
-    session = sessionmaker(bind=engine)()
     try:
         session.add(ConnectionTable(name_key, awsAccessKeyId, awsSecretKeyId))
         session.commit()
@@ -37,7 +40,7 @@ def create_connection(name_key, awsAccessKeyId, awsSecretKeyId):
         print "Error add connection to table!!!"
         session.rollback()
         raise
-
+    return Connection(name_key)
 
 
 
@@ -57,16 +60,20 @@ class Cluster(object):
         self.cluster_name = cluster_name
 
         # get connection string to aws
-        session = sessionmaker(bind=engine)()
-        __cluster_info=session.query(ClusterTable.connection, ClusterTable.zone).filter_by(name=self.cluster_name).all()[0]
-        if __cluster_info[0]:
+        __cluster_info=session.query(ClusterTable.connection, ClusterTable.zone).filter_by(name=self.cluster_name).all()
+        if not __cluster_info:
+            return None
 
-            ___connect=session.query(ConnectionTable.name, ConnectionTable.awsAccessKeyId, \
-                                ConnectionTable.awsSecretKeyId).filter_by(name=__cluster_info[0]).all()
-            if ___connect:
-                self.connect =  ___connect[0]
-        self.zone = __cluster_info[1]
-        self.conn = boto.connect_ec2(self.connect[1], self.connect[2])
+
+        try:
+            self.connect = __cluster_info[0][0]
+        except:
+            self.connect = None
+        try:
+            self.zone = __cluster_info[0][1]
+        except:
+            self.zone = None
+
 
     def __repr__(self):
         return "<Cluster('%s','%s', '%s')>" % (self.cluster_name, self.connect, self.zone)
@@ -77,12 +84,29 @@ class Cluster(object):
 
 
 
+class Connection(object):
+    """
+    Class Connection is AWS Cluster
+
+    :key_name: Name connection strint to aws in table connection
+    :awsAccessKeyId: Access key id for access to aws
+    :awsSecretKeyId: Secret key id for access to aws
+    """
+    def __init__(self, name):
+
+        self.name = name
+
+        # get connection string to aws
+        ___connect=session.query(ConnectionTable.awsAccessKeyId, \
+                                ConnectionTable.awsSecretKeyId).filter_by(name=self.name).all()
+        try:
+            self.awsAccessKeyId = ___connect[0][0]
+            self.awsSecretKeyId = ___connect[0][1]
+        except:
+            self.awsAccessKeyId = None
+            self.awsSecretKeyId = None
+
+    def __repr__(self):
+        return "<Cluster('%s','%s', '%s')>" % (self.name, self.awsAccessKeyId, self.awsSecretKeyId)
 
 
-
-
-
-
-#create_connection('test', 'access', 'secret')
-print create_cluster('testcluster1', 'test', 'zonetest')
-print Cluster('testcluster')

@@ -1,1 +1,4 @@
-__author__ = 'artem'
+from test import TestCluster
+import unittest
+
+unittest.main()
