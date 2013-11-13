@@ -1,4 +1,6 @@
 import sys
+import logging
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
 sys.path.append("../..")
 
 import boto
@@ -15,12 +17,12 @@ def create_cluster(name_cluster, name_key, zone):
     :awsAccessKeyId: Access key id for access to aws
     :awsSecretKeyId: Secret key id for access to aws
     """
-
+    logging.info("Creating cluster")
     try:
         session.add(ClusterTable(name_cluster, name_key, zone))
         session.commit()
     except:
-        print "Error add cluster to table!!!"
+        logging.error("Error add cluster to table")
         session.rollback()
         raise
 
@@ -33,11 +35,12 @@ def create_connection(name_key, awsAccessKeyId, awsSecretKeyId):
     :awsAccessKeyId: Access key id for access to aws
     :awsSecretKeyId: Secret key id for access to aws
     """
+    logging.info("Creating connection")
     try:
         session.add(ConnectionTable(name_key, awsAccessKeyId, awsSecretKeyId))
         session.commit()
     except:
-        print "Error add connection to table!!!"
+        logging.error("Error add connection entry to ConnectionTable")
         session.rollback()
         raise
     return Connection(name_key)
@@ -54,7 +57,7 @@ class Cluster(object):
     :zone: Zone AWS for server of the cluster
     """
 
-
+    logging.info("Initialization Cluster")
     def __init__(self, cluster_name):
 
         self.cluster_name = cluster_name
@@ -68,10 +71,12 @@ class Cluster(object):
         try:
             self.connect = __cluster_info[0][0]
         except:
+            logging.error("Cannot get entry ClusterTable.connection")
             self.connect = None
         try:
             self.zone = __cluster_info[0][1]
         except:
+            logging.error("Cannot get entry ClusterTable.zone")
             self.zone = None
 
 

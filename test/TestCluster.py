@@ -9,7 +9,7 @@ from app.Cluster import create_cluster, create_connection, Cluster, Connection
 from app.model import ConnectionTable, ClusterTable
 
 
-class TestSequenceFunctions(unittest.TestCase):
+class TestConnectionFunctions(unittest.TestCase):
 
     def setUp(self):
         try:

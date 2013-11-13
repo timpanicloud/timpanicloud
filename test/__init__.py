@@ -1,2 +1,3 @@
-__author__ = 'artem'
+from . import config
+
 
